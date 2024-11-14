@@ -12,4 +12,8 @@ public class UnableToFindTitle extends RuntimeException{
     public String getErrorCode() {
         return errorCode;
     }
+
+    @Data
+    public static class UsersNotFound extends RuntimeException{
+    }
 }

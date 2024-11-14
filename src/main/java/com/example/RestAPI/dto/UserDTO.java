@@ -1,23 +1,17 @@
-package com.example.RestAPI.entity;
-import jakarta.persistence.*;
+package com.example.RestAPI.dto;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Entity
+@Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Data
 @Builder
-@Table(name = "suser")
-public class UserEntity {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+public class UserDTO {
     private String firstName;
     private String lastName;
     private String email;
     private String password;
-
 }
