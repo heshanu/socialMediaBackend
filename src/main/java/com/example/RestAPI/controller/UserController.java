@@ -9,14 +9,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.sql.SQLException;
 import java.util.List;
-import java.util.Optional;
 
 @Slf4j
 @RestController
 @RequestMapping("api/v1/user/")
+@CrossOrigin(origins = "http://localhost:3000")
 public class UserController {
     private final UserService userService;
 
@@ -37,10 +35,18 @@ public class UserController {
         return new ResponseEntity<>(user, HttpStatus.OK);
 
     }
+
     @GetMapping("users")
     public ResponseEntity<List<UserDTO>> showAllUsers(){
         List<UserDTO> usrs=this.userService.showAllUsers();
         return new ResponseEntity<>(usrs,HttpStatus.OK);
+    }
+
+    @GetMapping("firstName")
+    public ResponseEntity<List<UserDTO>> showUserByFirstName(@RequestParam String firstName){
+        List<UserDTO> filteredUser=userService.findUserByFirstName(firstName);
+        log.info("users are:"+filteredUser);
+        return new ResponseEntity<>(filteredUser,HttpStatus.OK);
     }
 
    @GetMapping("id")
@@ -48,6 +54,16 @@ public class UserController {
         UserEntity usr = this.userService.findUserById(id);
         log.info("user is:"+usr);
         return new ResponseEntity<>(usr, HttpStatus.OK);
+    }
+
+    @PutMapping("update/{id}")
+    public ResponseEntity<String> updateUserById(@PathVariable Long id,@RequestBody UserDTO userDTO) {
+        try {
+            userService.updateUser(id,userDTO);
+            return ResponseEntity.ok("User updated successfully");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error updating user:"+id);
+        }
     }
 
     @DeleteMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)

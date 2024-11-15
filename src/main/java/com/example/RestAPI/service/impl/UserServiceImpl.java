@@ -8,7 +8,7 @@ import com.example.RestAPI.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.sql.SQLException;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -84,6 +84,37 @@ public class UserServiceImpl implements UserService {
         } catch (Exception e) {
             // Handle other exceptions if needed
             throw new RuntimeException("An error occurred while fetching the user by email: " + email, e);
+        }
+    }
+
+    @Override
+    public List<UserDTO> findUserByFirstName(String firstName) {
+        try {
+            Optional<List<UserEntity>> existingEmployee = Optional.ofNullable(userRepository.searchUserFirstName(firstName));
+            log.info("Employee using firstName: {}", firstName);
+
+            return existingEmployee
+                    .map(userEntities -> userEntities.stream()
+                            .map(this::userEntityToUserDTO)
+                            .collect(Collectors.toList()))
+                    .orElse(Collections.emptyList());
+
+        } catch (Exception e) {
+            throw new UserNotFoundException("Cannot find user by firstname" + firstName, "UNABLE_TO_SEARCH_BY_FIRSTNAME");
+        }
+
+    }
+
+    @Override
+    public void updateUser(Long id, UserDTO userDTO) {
+        log.info("User" + id +":");
+        UserEntity filteredUser = userRepository.findUserById(id)
+                .orElseThrow(() -> new UserNotFoundException("Unable to find User using this id" + id, "UNABLE_TO_FIND_USER"));
+        try {
+            userRepository.updateUserById(id, userDTO.getFirstName(), userDTO.getLastName(), userDTO.getEmail(), userDTO.getPassword());
+            log.info("User" + id +": was updated Successfully"+filteredUser);
+        } catch (Exception e) {
+            System.out.println();
         }
     }
 
