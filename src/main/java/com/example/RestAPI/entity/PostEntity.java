@@ -1,5 +1,6 @@
 package com.example.RestAPI.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -21,10 +22,9 @@ public class PostEntity {
     private String caption;
     private String image;
     private String video;
-
+    private String numberOfLikes;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "userId")
     private UserEntity userEntity;
     private LocalDateTime createdAt;
-
 }

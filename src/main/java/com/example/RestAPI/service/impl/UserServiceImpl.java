@@ -31,6 +31,7 @@ public class UserServiceImpl implements UserService {
 
     UserEntity userDTOToUserEntity(UserDTO userDTO){
         return UserEntity.builder()
+                .id(userDTO.getId())
                 .firstName(userDTO.getFirstName())
                 .lastName(userDTO.getLastName())
                 .email(userDTO.getEmail())
@@ -40,6 +41,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDTO userSave(UserDTO userDTO) {
        UserEntity userEntity=UserEntity.builder()
+               .id(userDTO.getId())
                .firstName(userDTO.getFirstName())
                .lastName(userDTO.getLastName())
                .email(userDTO.getEmail())
