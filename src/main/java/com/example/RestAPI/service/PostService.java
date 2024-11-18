@@ -7,8 +7,8 @@ import java.util.List;
 public interface PostService {
     void createNewPost(PostDTO postDTO,Long userId);
     void deletePost(Long postId);
-    PostDTO findPostByUserId(Long userId);
+    List<PostDTO> findPostByUserId(Long userId);
     PostDTO findPostById(Long postId);
     List<PostDTO> findAllPost();
-    PostDTO likedPost(Long postId,Long userId);
+    Long likedPost(Long postId);
 }

@@ -14,9 +14,11 @@ import java.time.LocalTime;
 @NoArgsConstructor
 @Builder
 public class PostDTO {
+    private Long id;
     private String caption;
     private String video;
     private String image;
+    private String numberOfLikes;
     private UserEntity user;
     private LocalDateTime createdAt;
 }

@@ -5,6 +5,7 @@ import com.example.RestAPI.dto.UserDTO;
 import com.example.RestAPI.entity.PostEntity;
 import com.example.RestAPI.entity.UserEntity;
 import com.example.RestAPI.exception.PostCreationException;
+import com.example.RestAPI.exception.PostNotFoundException;
 import com.example.RestAPI.exception.UserNotFoundException;
 import com.example.RestAPI.repository.PostRepository;
 import com.example.RestAPI.repository.UserRepository;
@@ -25,12 +26,14 @@ import java.util.stream.Collectors;
 public class PostServiceImpl implements PostService{
     private final PostRepository postRepository;
     private final UserRepository userRepository;
+    private final PostMapper postMapper;
 
     @Autowired
     public PostServiceImpl(PostRepository postRepository,
-                           UserRepository userRepository) {
+                           UserRepository userRepository, PostMapper postMapper) {
         this.postRepository = postRepository;
         this.userRepository = userRepository;
+        this.postMapper = postMapper;
     }
 
     PostDTO postEntityToPostDTO(PostEntity postEntity){
@@ -38,6 +41,7 @@ public class PostServiceImpl implements PostService{
                 .caption(postEntity.getCaption())
                 .user(postEntity.getUserEntity())
                 .image(postEntity.getImage())
+                .numberOfLikes(postEntity.getNumberOfLikes())
                 .video(postEntity.getVideo())
                 .createdAt(postEntity.getCreatedAt())
                 .build();
@@ -50,21 +54,26 @@ public class PostServiceImpl implements PostService{
                 .image(postDTO.getImage())
                 .createdAt(postDTO.getCreatedAt())
                 .caption(postDTO.getCaption())
+                .numberOfLikes(postDTO.getNumberOfLikes())
                 .build();
     }
 
     @Override
     public void createNewPost(PostDTO postDTO,Long userId) {
         UserEntity userEntity=  userRepository.findUserById(userId)
-                .orElseThrow(()->new UserNotFoundException("Unable to find user"+userId,"UNABLE_TO_FIND_USER"));
+                .orElseThrow(()->new PostNotFoundException("Unable to find user"+userId,"UNABLE_TO_FIND_USER"));
         try{
             PostEntity newPost=PostEntity.builder()
+                    .id(postDTO.getId())
                     .caption(postDTO.getCaption())
                     .createdAt(LocalDateTime.now())
                     .image(postDTO.getImage())
                     .userEntity(userEntity)
                     .video(postDTO.getVideo())
+                    .numberOfLikes(postDTO.getNumberOfLikes())
                     .build();
+
+            log.info("create new post",newPost);
             postRepository.save(newPost);
             log.info("Post is saved under postId:"+ userEntity.getId()+"User Id:"+userId);
         }
@@ -77,7 +86,7 @@ public class PostServiceImpl implements PostService{
     @Override
     public void deletePost(Long postId) {
             Optional<PostEntity> deletePost= Optional.ofNullable(postRepository.findById(postId)
-                    .orElseThrow(() -> new UserNotFoundException("Unable to find post using this id:" + postId, "UNABLE_TO_DELETE")));
+                    .orElseThrow(() -> new PostNotFoundException("Unable to find post using this id:" + postId, "UNABLE_TO_DELETE")));
             try {
                 Long deletedPostId=deletePost.get().getId();
                 postRepository.deleteById(deletedPostId);
@@ -88,14 +97,25 @@ public class PostServiceImpl implements PostService{
     }
 
     @Override
-    public PostDTO findPostByUserId(Long userId) {
-            return null;
+    public List<PostDTO> findPostByUserId(Long userId) {
+        log.info("userId"+userId);
+        try{
+        List<PostEntity> postEntityList =postRepository.findPostByUserId(userId);
+        log.info(":"+postEntityList);
+
+        return postEntityList
+                .stream()
+                    .map(postMapper::postEntityToPostDTO)
+                    .collect(Collectors.toList());}
+        catch (Exception e){
+            throw new PostCreationException("Unable to find user by id"+userId,"UNABLE_TO_FINDUSER");
+        }
     }
 
     @Override
     public PostDTO findPostById(Long postId) {
         PostEntity postEntity = postRepository.findById(postId)
-                .orElseThrow(() -> new UserNotFoundException("Unable to find post", "UNABLE_TO_FIND_POST"));
+                .orElseThrow(() -> new PostNotFoundException("Unable to find post", "UNABLE_TO_FIND_POST"));
 
         log.info("Post found with ID: {}", postId);
 
@@ -105,21 +125,23 @@ public class PostServiceImpl implements PostService{
     @Override
     public List<PostDTO> findAllPost() {
         try {
-            Optional<List<PostEntity>> existingPosts = Optional.ofNullable(postRepository.findAll());
-            log.info("Posts fetched"+existingPosts.stream().count());
-            return existingPosts
-                    .map(postEntities -> postEntities.stream()
-                            .map(this::postEntityToPostDTO)
-                            .collect(Collectors.toList()))
-                    .orElse(Collections.emptyList());
-
+            List<PostEntity> existingPosts = postRepository.findAll();
+            if (existingPosts.isEmpty()) {
+                throw new PostCreationException("Cannot find posts, db is empty", "UNABLE_TO_SEARCH_POSTS");
+            }
+            log.info("Posts fetched: {}", existingPosts.size());
+            return existingPosts.stream()
+                    .map(postMapper::postEntityToPostDTO)
+                    .collect(Collectors.toList());
         } catch (Exception e) {
-            throw new UserNotFoundException("Cannot find posts db is empty","UNABLE_TO_SEARCH_POSTS");
+            throw new UserNotFoundException("Cannot find posts, db is empty", "UNABLE_TO_SEARCH_POSTS");
         }
     }
 
     @Override
-    public PostDTO likedPost(Long postId, Long userId) {
-        return null;
+    public Long likedPost(Long postId) {
+        PostEntity likedPost = postRepository.findById(postId)
+                .orElseThrow(() -> new PostNotFoundException("Unable to find post", "UNABLE_TO_FIND_POST"));
+        return postRepository.findAmountOfLikesForPost(postId);
     }
 }

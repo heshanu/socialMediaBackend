@@ -2,6 +2,7 @@ package com.example.RestAPI.controller;
 
 import com.example.RestAPI.dto.PostDTO;
 import com.example.RestAPI.service.PostService;
+import com.example.RestAPI.util.PostMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,7 +17,7 @@ import java.util.List;
 public class PostController {
     private PostService postService;
 
-    public PostController(PostService postService) {
+    public PostController(PostService postService,PostMapper postMapper) {
         this.postService = postService;
     }
 
@@ -44,6 +45,14 @@ public class PostController {
     @GetMapping("/allPosts")
     public ResponseEntity<List<PostDTO>> getAllPosts(){
         return new ResponseEntity<>(postService.findAllPost(),HttpStatus.OK);
+    }
+
+    @GetMapping("/getPostByUserId")
+    public ResponseEntity<List<PostDTO>> getAllPostsByUserId(@RequestParam Long userId){
+        return new ResponseEntity<>(postService.findPostByUserId(userId),HttpStatus.OK);}
+    @GetMapping("/getLikesAmount")
+    public ResponseEntity<Long> getLikesAmountByPostId(@RequestParam Long postId){
+        return new ResponseEntity<>(postService.likedPost(postId),HttpStatus.OK);
     }
 
 }

@@ -1,4 +1,5 @@
 package com.example.RestAPI.entity;
+import com.example.RestAPI.dto.UserDTO;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -20,5 +21,4 @@ public class UserEntity {
     private String lastName;
     private String email;
     private String password;
-
 }
