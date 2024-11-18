@@ -50,7 +50,6 @@ public class PostController {
     @GetMapping("/getPostByUserId")
     public ResponseEntity<List<PostDTO>> getAllPostsByUserId(@RequestParam Long userId){
         return new ResponseEntity<>(postService.findPostByUserId(userId),HttpStatus.OK);}
-
     @GetMapping("/getLikesAmount")
     public ResponseEntity<Long> getLikesAmountByPostId(@RequestParam Long postId){
         return new ResponseEntity<>(postService.likedPost(postId),HttpStatus.OK);
